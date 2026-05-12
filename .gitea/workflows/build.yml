@@ -16,15 +16,20 @@ jobs:
           echo "Репозиторий: ${{ github.repository }}"
           echo "Ветка: ${{ github.ref_name }}"
           echo "Коммит: ${{ github.sha }}"
+          echo "Дата и время: $(date)"
 
-      - name: Create Dockerfile
+      - name: Create test file
+        run: |
+          mkdir -p build
+          echo "Билд номер: ${{ github.run_id }}" > build/info.txt
+          echo "Коммит: ${{ github.sha }}" >> build/info.txt
+          echo "Дата сборки: $(date)" >> build/info.txt
+          cat build/info.txt
+
+      - name: Docker build test
         run: |
           echo "FROM alpine:latest" > Dockerfile
-          echo "RUN echo 'Hello from Gitea Actions CI/CD!' > /hello.txt" >> Dockerfile
+          echo "RUN echo 'Hello from Gitea CI/CD!' > /hello.txt" >> Dockerfile
           echo "CMD cat /hello.txt" >> Dockerfile
-
-      - name: Build Docker image
-        run: docker build -t my-app:${{ github.sha }} .
-
-      - name: Verify image
-        run: docker run --rm my-app:${{ github.sha }}
+          docker build -t test-app:${{ github.sha }} .
+          docker run --rm test-app:${{ github.sha }}
