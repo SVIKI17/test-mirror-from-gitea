@@ -3,8 +3,6 @@ name: CI/CD Pipeline
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build:
@@ -18,17 +16,15 @@ jobs:
           echo "Репозиторий: ${{ github.repository }}"
           echo "Ветка: ${{ github.ref_name }}"
           echo "Коммит: ${{ github.sha }}"
-          echo "Дата и время: $(date)"
 
-      - name: Create build artifact
+      - name: Create Dockerfile
         run: |
-          mkdir -p build
-          echo "Билд номер: ${{ github.run_id }}" > build/info.txt
-          echo "Коммит: ${{ github.sha }}" >> build/info.txt
-          echo "Дата сборки: $(date)" >> build/info.txt
+          echo "FROM alpine:latest" > Dockerfile
+          echo "RUN echo 'Hello from Gitea Actions CI/CD!' > /hello.txt" >> Dockerfile
+          echo "CMD cat /hello.txt" >> Dockerfile
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-info
-          path: build/
+      - name: Build Docker image
+        run: docker build -t my-app:${{ github.sha }} .
+
+      - name: Verify image
+        run: docker run --rm my-app:${{ github.sha }}
