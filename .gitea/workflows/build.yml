@@ -1,0 +1,34 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Show repository info
+        run: |
+          echo "Репозиторий: ${{ github.repository }}"
+          echo "Ветка: ${{ github.ref_name }}"
+          echo "Коммит: ${{ github.sha }}"
+          echo "Дата и время: $(date)"
+
+      - name: Create build artifact
+        run: |
+          mkdir -p build
+          echo "Билд номер: ${{ github.run_id }}" > build/info.txt
+          echo "Коммит: ${{ github.sha }}" >> build/info.txt
+          echo "Дата сборки: $(date)" >> build/info.txt
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-info
+          path: build/
